@@ -17,6 +17,8 @@ main = hspec $ do
             convergeReduce (Application (Abstraction "x" (Variable "x")) (Variable "x")) `shouldBe` Right (Variable "x")
         it "short circuits variable substitution on tighter scopes" $ do
             convergeReduce (Application (Abstraction "x" (Abstraction "x" (Variable "x"))) (Variable "y")) `shouldBe` Right (Abstraction "A" (Variable "A"))
+        it "applies eta reduction" $ do
+            convergeReduce (Abstraction "x" (Application (Variable "f") (Variable "x"))) `shouldBe` Right (Variable "f")
     describe "converge" $ do
         it "finds the converging point" $ do
             converge (flip mod 2) 4 `shouldBe` 0

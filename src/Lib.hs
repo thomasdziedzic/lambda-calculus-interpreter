@@ -48,11 +48,10 @@ myParse s =
         Left err -> Left $ show err
         Right s -> Right s
 
--- TODO perform eta conversion
--- http://www.cs.columbia.edu/~aho/cs4115/Lectures/15-04-13.html
--- "In general, if x does not occur free in the function F, then (λx.F x) is η-convertible to F."
 reduce :: Expression -> Expression
 reduce (Application e1@(Variable _) e2) = Application e1 (reduce e2)
+reduce (Abstraction x (Application e1@(Variable v1) (Variable v2)))
+    | x == v2 && x /= v1 = e1
 reduce (Application e1@(Abstraction param body) e2) = {-alphaConversion e1 e2 -} substitute body param e2
 reduce (Application e1@(Application _ _) e2) = reduce (Application (reduce e1) e2)
 reduce (Abstraction p b) = Abstraction p (reduce b)
@@ -61,7 +60,7 @@ reduce e@(Variable _) = e
 substitute :: Expression -> String -> Expression -> Expression
 substitute e@(Abstraction p b) v e'
     | p == v = e -- do not replace variables with the same name that show up in a tighter scope
-    | otherwise = Abstraction p (substitute b v e') -- TODO alpha conversion
+    | otherwise = Abstraction p (substitute b v e')
 substitute e@(Variable s) v e'
     | s == v = e'
     | otherwise = e
